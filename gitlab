@@ -1,15 +1,11 @@
 #!/bin/bash
 
 
-if (echo $PWD=="/home/kuba/Desktop/Workspace/python-projects") then
-lista=$(ls)
+
 echo "Enter commit messege: "
 read tekst
 
-
-git add $lista
+git add .
 git commit -m $tekst
-git pull
 git push
 
-fi
