@@ -4,45 +4,85 @@ import datetime
 import threading
 import requests
 import re
-threads = []
+
+threads = []  # all threads list
+tasks_list = []  # all tasks list
+
+
+def start_received_request_action(data):
+    """
+    Main function which extract task type and start proper action. Then return response.
+
+    :param data:
+    :return: response string
+    """
+    if data["action"] == "check_status":
+        return get_status_of_all_tasks()
+    elif data["action"] == "download_request":
+        tasks_list.append(Task(data))
+        return tasks_list[-1].response
+
+
+def get_status_of_all_tasks():
+    """
+    Function which get information about all actual processed tasks.
+
+    :return: dictionary containing information about all actual processed tasks
+    """
+    response = dict()
+    for task in tasks_list:
+        response.update(task.get_task_data())
+
+    return response
 
 
 class Task:
-    def __init__(self, link, filename, extension, download_dir):
+    def __init__(self, data):
         """
         Create task download object. This automatically starts downloading file in new thread.
 
-        :param link: link to target file
-        :param filename: name of file we want ot save in remote device
-        :param download_dir: path to directory where target file will be saved
+        :param data: received dict with all task data
         """
-        self.start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # time when task was started
-        self.link = link  # link to file which is downloaded
-        self.filename = filename  # name of file in process
-        self.status = '0.0'  # amount of downloaded size in percents
-        self.finish = False  # flag which determinate if task is done
-        self.download_dir = download_dir
-        self.extension = extension
 
+        self.start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # time when task was started
+        self.link = ""
+        self.filename = ""
+        self.status = '0.0'
+        self.finish = False  # flag which determinate if task is done
+        self.download_dir = "/"
+        self.extension = ""
+        self.rcv_data = data
+        self.response = ""
+
+        self._extract_task_info_from_rcvdata()
         threads.append(threading.Thread(target=self.start_download_task, args=()))
         # ^^define new thread and write this object to threads table
 
-        i = len(threads)  # get length of threads tab
-        threads[i - 1].daemon = True  # Demonize thread
-        threads[i - 1].start()  # starting this thread
+        i = len(threads)
+        threads[i - 1].daemon = True
+        threads[i - 1].start()
+        self.response = {"response": "download task started"}
 
-    def show_task(self):
+    def get_task_data(self):
         """
         Give information about filename, start time and download status of task object.
 
-        :return: string containing actual progress of task object
+        :return: json object with all information about task object
         """
-        info = str(self.filename) + "------------------------------------------------\n" + str(
-            self.start_time) + "  " + str(self.status) + " % \n" + "------------------------------------------------\n"
+        data = {self.filename: {"link": self.link, "extension": self.extension,
+                                "download_dir": self.download_dir, "status": self.status,
+                                "start_time": self.start_time}}
 
-        return info
+        return data
 
-    def check_task_type(self):
+    def _extract_task_info_from_rcvdata(self):
+
+        self.link = self.rcv_data["link"]
+        self.filename = self.rcv_data["filename"]
+        self.extension = self.rcv_data["extension"]
+        self.download_dir = self.rcv_data["download_dir"]
+
+    def _check_task_type(self):
         """
         Verify if it's youtube task or regular file download task.
 
@@ -54,13 +94,14 @@ class Task:
         else:
             return False
 
-    def download_youtube_mp3(self):
+    def _download_youtube_mp3(self):
         """
         Download youtube mp3 file.
 
         :return: None
         """
         ydl_opts = {
+            # values to set yt_dl library
             'format': 'bestaudio/best',
             'extractaudio': True,  # value determinate parametrs of ydl library
             'audioformat': "mp3",
@@ -69,34 +110,33 @@ class Task:
             'nooverwrites': True,
         }
 
-        with youtube_dl.YoutubeDL(ydl_opts) as ydl:  # this starting downloading mp3 file
+        with youtube_dl.YoutubeDL(ydl_opts) as ydl:  # create mp3 file
 
-            ydl.download([self.link])  # maybe this starti it , this above create file
-
-        self.status = 100  # write paramters
+            ydl.download([self.link])
+        # TO DO make status counter in this section
+        self.status = 100  # set status value to 100 %
         self.finish = True
 
-    def download_regular_file(self):
+    def _download_regular_file(self):
         """
         Download regular file.
 
         :return: None
         """
-        filename = self.filename + '.' + self.extension  # add extesnion to name of file
+        filename = self.filename + '.' + self.extension
 
-        with open(self.download_dir + filename, 'wb') as f:  # create file
+        with open(self.download_dir + filename, 'wb') as f:  # create file with properer extension
 
             print(filename)
             print(self.link)
 
-            response = requests.get(self.link, stream=True)  # get response from link
+            response = requests.get(self.link, stream=True)  # get response from link which contain size of file
             total = response.headers.get('content-length')
 
-            if total is None:  # no header no stream
+            if total is None:  # no header no stream started
                 f.write(response.content)
 
             else:
-                # download file block
                 downloaded = 0
                 total = int(total)
 
@@ -105,7 +145,7 @@ class Task:
                     f.write(data)
                     prog = (downloaded / total) * 100
 
-                    self.status = "%.2f" % prog  # updateing status parametr
+                    self.status = "%.2f" % prog  # update percent value od downloaded file
 
     def start_download_task(self):
         """
@@ -113,8 +153,8 @@ class Task:
 
         :return: None
         """
-        if self.check_task_type():
-            self.download_youtube_mp3()
+        if self._check_task_type():
+            self._download_youtube_mp3()
         else:
-            self.download_regular_file()
+            self._download_regular_file()
             self.finish = True
