@@ -17,10 +17,16 @@ def start_received_request_action(data):
     :return: response string
     """
     if data["action"] == "check_status":
-        return get_status_of_all_tasks()
+        dictionary = get_status_of_all_tasks()
+        if dictionary:
+            return get_status_of_all_tasks()
+        else:
+            return {"response": "no task in process"}
     elif data["action"] == "download_request":
         tasks_list.append(Task(data))
         return tasks_list[-1].response
+    else:
+        return {"response": "invalid request action data"}
 
 
 def get_status_of_all_tasks():
@@ -36,7 +42,7 @@ def get_status_of_all_tasks():
     return response
 
 
-class Task:
+class Task(object):
     def __init__(self, data):
         """
         Create task download object. This automatically starts downloading file in new thread.
