@@ -75,7 +75,7 @@ class Task(object):
 
         :return: json object with all information about task object
         """
-        data = {self.filename: {"link": self.link, "extension": self.extension,
+        data = {self.filename: {"extension": self.extension,
                                 "download_dir": self.download_dir, "status": self.status,
                                 "start_time": self.start_time}}
 
@@ -149,9 +149,9 @@ class Task(object):
                 for data in response.iter_content(chunk_size=max(int(total / 1000), 1024 * 1024)):
                     downloaded += len(data)
                     f.write(data)
-                    prog = (downloaded / total) * 100
+                    progress = (downloaded / total) * 100
 
-                    self.status = "%.2f" % prog  # update percent value od downloaded file
+                    self.status = "%.2f" % progress  # update percent value od downloaded file
 
     def start_download_task(self):
         """
