@@ -4,6 +4,8 @@ import datetime
 import threading
 import requests
 import re
+import time
+import os
 
 threads = []  # all threads list
 tasks_list = []  # all tasks list
@@ -21,12 +23,16 @@ def start_received_request_action(data):
         if dictionary:
             return get_status_of_all_tasks()
         else:
-            return {"response": "no task in process"}
+            return {"response": "No task in process"}
     elif data["action"] == "download_request":
         tasks_list.append(Task(data))
-        return tasks_list[-1].response
+        response = tasks_list[-1].response
+        if not tasks_list[-1].download_started:
+            os.remove(tasks_list[-1].download_dir + tasks_list[-1].filename + '.' + tasks_list[-1].extension)
+            del tasks_list[-1]
+        return response
     else:
-        return {"response": "invalid request action data"}
+        return {"response": "Invalid request action data"}
 
 
 def get_status_of_all_tasks():
@@ -37,8 +43,10 @@ def get_status_of_all_tasks():
     """
     response = dict()
     for task in tasks_list:
-        response.update(task.get_task_data())
-
+        if not task.finish:
+            response.update(task.get_task_data())
+        else:
+            del task
     return response
 
 
@@ -49,7 +57,6 @@ class Task(object):
 
         :param data: received dict with all task data
         """
-
         self.start_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # time when task was started
         self.link = ""
         self.filename = ""
@@ -59,15 +66,19 @@ class Task(object):
         self.extension = ""
         self.rcv_data = data
         self.response = ""
+        self.download_started = False
 
         self._extract_task_info_from_rcvdata()
         threads.append(threading.Thread(target=self.start_download_task, args=()))
         # ^^define new thread and write this object to threads table
-
         i = len(threads)
         threads[i - 1].daemon = True
         threads[i - 1].start()
-        self.response = {"response": "download task started"}
+        time.sleep(5)
+        if self.download_started:
+            self.response = {"response": "Download task started"}
+        else:
+            self.response = {"response": "Invalid request action data"}
 
     def get_task_data(self):
         """
@@ -78,7 +89,6 @@ class Task(object):
         data = {self.filename: {"extension": self.extension,
                                 "download_dir": self.download_dir, "status": self.status,
                                 "start_time": self.start_time}}
-
         return data
 
     def _extract_task_info_from_rcvdata(self):
@@ -95,7 +105,6 @@ class Task(object):
         :return: True or False
         """
         if re.match(r'\w+:..((www.youtube.)|(youtu.be.)).+', self.link):
-
             return True
         else:
             return False
@@ -109,19 +118,17 @@ class Task(object):
         ydl_opts = {
             # values to set yt_dl library
             'format': 'bestaudio/best',
-            'extractaudio': True,  # value determinate parametrs of ydl library
+            'extractaudio': True,  # value determinate parameters of ydl library
             'audioformat': "mp3",
             'outtmpl': self.download_dir + '%(title)s.mp3',
             'noplaylist': True,
             'nooverwrites': True,
         }
-
         with youtube_dl.YoutubeDL(ydl_opts) as ydl:  # create mp3 file
-
+            self.download_started = True
             ydl.download([self.link])
         # TO DO make status counter in this section
         self.status = 100  # set status value to 100 %
-        self.finish = True
 
     def _download_regular_file(self):
         """
@@ -130,27 +137,22 @@ class Task(object):
         :return: None
         """
         filename = self.filename + '.' + self.extension
-
         with open(self.download_dir + filename, 'wb') as f:  # create file with properer extension
-
             print(filename)
             print(self.link)
-
             response = requests.get(self.link, stream=True)  # get response from link which contain size of file
             total = response.headers.get('content-length')
 
             if total is None:  # no header no stream started
                 f.write(response.content)
-
             else:
+                self.download_started = True
                 downloaded = 0
                 total = int(total)
-
                 for data in response.iter_content(chunk_size=max(int(total / 1000), 1024 * 1024)):
                     downloaded += len(data)
                     f.write(data)
                     progress = (downloaded / total) * 100
-
                     self.status = "%.2f" % progress  # update percent value od downloaded file
 
     def start_download_task(self):
@@ -161,6 +163,7 @@ class Task(object):
         """
         if self._check_task_type():
             self._download_youtube_mp3()
+            self.finish = True
         else:
             self._download_regular_file()
             self.finish = True

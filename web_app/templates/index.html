@@ -1,0 +1,89 @@
+<html>
+<head>
+    <title>RemoteDownload</title>
+    <link rel="stylesheet" media="screen" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <meta name="viewport" content="width=device-width">
+</head>
+<body>
+<div class="container"><br>
+    <center>
+        <h2>Remote Download App</h2>
+    </center>
+</div>
+
+<div class=container"><br>
+    <div class="row align-items-center justify-content-center">
+        <div class="col-md-4">
+            <form action="" method="post" role="form">
+                {{ form.csrf }}
+                <div class="form-group">
+                    <center>
+                        <label for="link">Link</label>
+                    </center>
+                    <input type="text" class="form-control" id="link" name="link" placeholder="Link of download">
+                    <br>
+                    <center>
+                        <label for="file_name">File name</label>
+                    </center>
+                    <input type="text" class="form-control" id="file_name" name="file_name"
+                           placeholder="Name to save in remote location">
+                    <br>
+                    <center>
+                        <label for="extension">Extension</label>
+                    </center>
+                    <input type="text" class="form-control" id="extension" name="extension"
+                           placeholder="Extension of requested file">
+                    <br>
+                </div>
+                <br>
+
+                <center>
+                    <button type="submit" class="btn btn-success">Download</button>
+                </center>
+            </form>
+            <center>
+                <form action="button">
+                    <button type="submit" class="btn btn-success">Check Tasks</button>
+                </form>
+            </center>
+            <br>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for message in messages %}
+            {% if "Download" in message[1]: %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                {{ message[1] }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endif %}
+            {% if "Invalid" in message[1]: %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                {{ message[1] }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endif %}
+            {% if "Fields" in message[1]: %}
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                {{ message[1] }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+        </div>
+        <br>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>
