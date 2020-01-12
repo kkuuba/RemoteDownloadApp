@@ -1,5 +1,5 @@
-from flask import Flask, render_template, flash, request, redirect
-from wtforms import Form, TextField,  validators
+from flask import Flask, render_template, flash, request
+from wtforms import Form, TextField, validators
 from tasks import start_received_request_action
 
 DEBUG = True
@@ -38,14 +38,15 @@ def download():
     return render_template('/index.html', form=form)
 
 
-@app.route('/button')
+@app.route('/task_table')
 def check_status():
     status_request = {
         "action": "check_status"
     }
+    tasks_data = start_received_request_action(status_request)
 
-    return start_received_request_action(status_request)
+    return render_template('/task_table.html', tasks_data=tasks_data)
 
 
 if __name__ == "__main__":
-    app.run(host='192.168.43.205', port=5555)
+    app.run(host="0.0.0.0", port=5555)

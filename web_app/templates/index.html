@@ -11,7 +11,6 @@
         <h2>Remote Download App</h2>
     </center>
 </div>
-
 <div class=container"><br>
     <div class="row align-items-center justify-content-center">
         <div class="col-md-4">
@@ -27,28 +26,28 @@
                         <label for="file_name">File name</label>
                     </center>
                     <input type="text" class="form-control" id="file_name" name="file_name"
-                           placeholder="Name to save in remote location">
+                           placeholder="Name of file">
                     <br>
                     <center>
                         <label for="extension">Extension</label>
                     </center>
                     <input type="text" class="form-control" id="extension" name="extension"
-                           placeholder="Extension of requested file">
+                           placeholder="Extension of file">
                     <br>
                 </div>
                 <br>
-
                 <center>
-                    <button type="submit" class="btn btn-success">Download</button>
+                    <form action="download">
+                        <button type="submit" class="btn btn-primary btn-lg btn-block">Download</button>
+                    </form>
                 </center>
             </form>
             <center>
-                <form action="button">
-                    <button type="submit" class="btn btn-success">Check Tasks</button>
+                <form action="task_table">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">Check Status</button>
                 </form>
             </center>
             <br>
-
             {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
             {% for message in messages %}

@@ -74,7 +74,7 @@ class Task(object):
         i = len(threads)
         threads[i - 1].daemon = True
         threads[i - 1].start()
-        time.sleep(5)
+        time.sleep(3)
         if self.download_started:
             self.response = {"response": "Download task started"}
         else:
@@ -87,7 +87,7 @@ class Task(object):
         :return: json object with all information about task object
         """
         data = {self.filename: {"extension": self.extension,
-                                "download_dir": self.download_dir, "status": self.status,
+                                "download_dir": self.download_dir, "status": str(self.status),
                                 "start_time": self.start_time}}
         return data
 
@@ -153,7 +153,7 @@ class Task(object):
                     downloaded += len(data)
                     f.write(data)
                     progress = (downloaded / total) * 100
-                    self.status = "%.2f" % progress  # update percent value od downloaded file
+                    self.status = int(progress)  # update percent value od downloaded file
 
     def start_download_task(self):
         """

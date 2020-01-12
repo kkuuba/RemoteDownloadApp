@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Bootstrap 4 Progress Bar</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <style>
+    .bs-example{
+        margin: 20px;
+    }
+    /* Adding space at the bottom of progress bar */
+    .progress{
+        margin-bottom: 1rem;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </style>
+</head>
+<body>
+<div class="bs-example">
+    {% for task in tasks_data %}
+    {% if "response" in task %}
+    <center>
+        <h1>{{tasks_data[task]}}</h1>
+    </center>
+    {% else %}
+    <center>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm">
+                    FILE: {{ task }}.{{tasks_data[task]['extension']}}
+                </div>
+                <div class="col-sm">
+                    STARTED: {{tasks_data[task]['start_time']}}
+                </div>
+                <div class="col-sm">
+                    PROGRESS: {{tasks_data[task]['status']}} %
+                </div>
+            </div>
+        </div>
+        <br>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75"
+                 aria-valuemin="0" aria-valuemax="100" style="width: {{tasks_data[task]['status']}}%">
+            </div>
+        </div>
+    </center>
+    {%endif%}
+    {% endfor %}
+    <center>
+        <form action="/">
+            <button type="submit" class="btn btn-primary btn-lg btn-block">Back</button>
+        </form>
+    </center>
+</div>
+</body>
+</html>
