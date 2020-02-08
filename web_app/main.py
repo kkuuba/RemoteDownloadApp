@@ -1,8 +1,9 @@
 from flask import Flask, render_template, flash, request
 from wtforms import Form, TextField, validators
 from tasks import start_received_request_action
+import getpass
 
-DEBUG = True
+DEBUG = False
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config['SECRET_KEY'] = 'SjdnUends821Jsdlkvxh391ksdODnejdDw'
@@ -28,7 +29,7 @@ def download():
                 "link": link,
                 "filename": file_name,
                 "extension": extension,
-                "download_dir": "/home/kuba/",
+                "download_dir": "C:/Users/" + str(getpass.getuser()) + "/Desktop/RD_App_files/",
                 "action": "download_request"
             }
             flash(start_received_request_action(request_data)['response'])
